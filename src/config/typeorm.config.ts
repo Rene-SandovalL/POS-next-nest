@@ -13,5 +13,5 @@ export const typeOrmConfig = (
 
   logging: true,
   autoLoadEntities: true,
-  synchronize: true,
+  synchronize: true, // Ponerlo en false en produccion
 });
