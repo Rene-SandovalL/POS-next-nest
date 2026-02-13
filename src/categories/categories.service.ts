@@ -23,18 +23,22 @@ export class CategoriesService {
 
   async findOne(id: number) {
     const category = await this.categoryRepository.findOneBy({ id });
-    console.log(category);
     if (!category) {
       throw new NotFoundException('Category not found');
     }
     return category;
   }
 
-  update(id: number, updateCategoryDto: UpdateCategoryDto) {
-    return `This action updates a #${id} category`;
+  async update(id: number, updateCategoryDto: UpdateCategoryDto) {
+    const category = await this.findOne(id);
+    return this.categoryRepository.save({
+      ...category,
+      ...updateCategoryDto, // spread operator para actualizar solo los campos que vienen en el DTO
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} category`;
+  async remove(id: number) {
+    const category = await this.findOne(id);
+    return await this.categoryRepository.remove(category);
   }
 }
