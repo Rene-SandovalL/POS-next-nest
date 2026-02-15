@@ -39,7 +39,7 @@ export class ProductsService {
   }
 
   update(id: number, updateProductDto: UpdateProductDto) {
-    return `This action updates a #${id} product`;
+    return `This action updates a #${id} product prueba para git cachyOS`;
   }
 
   remove(id: number) {
