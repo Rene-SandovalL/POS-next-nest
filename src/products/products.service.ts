@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindManyOptions, Repository } from 'typeorm';
 import { Product } from './entities/product.entity';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -30,10 +30,25 @@ export class ProductsService {
     });
   }
 
-  findAll() {
-    return this.productRepository.find({
+  async findAll(categoryId: number | null) {
+    const options: FindManyOptions<Product> = {
       relations: ['category'],
-    });
+      order: {
+        id: 'ASC',
+      },
+    };
+
+    if (categoryId) {
+      options.where = {
+        category: {
+          id: categoryId,
+        },
+      };
+    }
+
+    const [products, total] =
+      await this.productRepository.findAndCount(options);
+    return { products, total };
   }
 
   findOne(id: number) {
