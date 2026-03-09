@@ -30,12 +30,14 @@ export class ProductsService {
     });
   }
 
-  async findAll(categoryId: number | null) {
+  async findAll(categoryId: number | null, take: number, skip: number) {
     const options: FindManyOptions<Product> = {
       relations: ['category'],
       order: {
         id: 'ASC',
       },
+      take,
+      skip,
     };
 
     if (categoryId) {
@@ -51,15 +53,42 @@ export class ProductsService {
     return { products, total };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} product`;
+  async findOne(id: number) {
+    const product = await this.productRepository.findOne({
+      where: { id },
+      relations: ['category'],
+    });
+    if (!product) {
+      throw new NotFoundException(`El producto con ID ${id} no existe`);
+    }
+    return product;
   }
 
-  update(id: number, updateProductDto: UpdateProductDto) {
-    return `This action updates a #${id} product prueba para git cachyOS`;
+  async update(id: number, updateProductDto: UpdateProductDto) {
+    const product = await this.findOne(id);
+    Object.assign(product, updateProductDto);
+
+    if (updateProductDto.categoryId) {
+      const category = await this.categoryRepository.findOneBy({
+        id: updateProductDto.categoryId,
+      });
+
+      if (!category) {
+        const errors: string[] = [];
+        errors.push('La categoría no existe');
+        throw new NotFoundException('La categoría no existe');
+      }
+      product.category = category;
+    }
+
+    return await this.productRepository.save({
+      ...product,
+      ...updateProductDto,
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} product`;
+  async remove(id: number) {
+    const product = await this.findOne(id);
+    return await this.productRepository.remove(product);
   }
 }
